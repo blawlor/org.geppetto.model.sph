@@ -44,11 +44,13 @@ import org.geppetto.model.sph.common.SPHConstants;
 
 /**
  * @author matteocantarelli
- *
+ * 
  */
 public class CreateSPHSceneVisitor extends DefaultStateVisitor
 {
 
+	private int PARTICLE_SAMPLING = 1;
+	
 	private Scene _scene = new Scene();
 	private Entity _liquidEntity = new Entity();
 	private Entity _boundaryEntity = new Entity();
@@ -56,13 +58,13 @@ public class CreateSPHSceneVisitor extends DefaultStateVisitor
 	private Float _particleKind;
 	private Particle _newParticle;
 	private Point _newPoint;
-	
-	
+	private int _samplingCounter = 0;
+
 	public Scene getScene()
 	{
 		return _scene;
 	}
-	
+
 	public CreateSPHSceneVisitor(String modelId)
 	{
 		super();
@@ -80,18 +82,38 @@ public class CreateSPHSceneVisitor extends DefaultStateVisitor
 	{
 		if(node.getName().startsWith("p["))
 		{
-			_newParticle=new Particle();
-			_newParticle.setId(node.getName());
-			_newPoint=new Point();
-			_newParticle.setPosition(_newPoint);
+			if(processParticle())
+			{
+				_newParticle = new Particle();
+				_newParticle.setId(node.getName());
+				_newPoint = new Point();
+				_newParticle.setP(_newPoint);
+			}
+			else
+			{
+				return false;
+			}
 		}
 		return super.inCompositeStateNode(node);
+	}
+
+	/**
+	 * @return
+	 */
+	private boolean processParticle()
+	{
+		if(++_samplingCounter == PARTICLE_SAMPLING)
+		{
+			_samplingCounter = 0;
+			return true;
+		}
+		return false;
 	}
 
 	@Override
 	public boolean outCompositeStateNode(CompositeStateNode node)
 	{
-		if(node.getName().startsWith("p["))
+		if(_newParticle!=null && node.getName().startsWith("p["))
 		{
 			if(_particleKind.equals(SPHConstants.LIQUID_TYPE))
 			{
@@ -105,8 +127,8 @@ public class CreateSPHSceneVisitor extends DefaultStateVisitor
 			{
 				_boundaryEntity.getGeometries().add(_newParticle);
 			}
-			_newParticle=null;
-			_newPoint=null;
+			_newParticle = null;
+			_newPoint = null;
 		}
 		return super.outCompositeStateNode(node);
 	}
@@ -114,21 +136,21 @@ public class CreateSPHSceneVisitor extends DefaultStateVisitor
 	@Override
 	public boolean visitSimpleStateNode(SimpleStateNode node)
 	{
-		if(node.getName()=="x")
+		if(node.getName() == "x")
 		{
-			_newPoint.setX(((FloatValue)node.consumeFirstValue()).getAsDouble());
+			_newPoint.setX(((FloatValue) node.consumeFirstValue()).getAsDouble());
 		}
-		else if(node.getName()=="y")
+		else if(node.getName() == "y")
 		{
-			_newPoint.setY(((FloatValue)node.consumeFirstValue()).getAsDouble());
+			_newPoint.setY(((FloatValue) node.consumeFirstValue()).getAsDouble());
 		}
-		else if(node.getName()=="z")
+		else if(node.getName() == "z")
 		{
-			_newPoint.setZ(((FloatValue)node.consumeFirstValue()).getAsDouble());
+			_newPoint.setZ(((FloatValue) node.consumeFirstValue()).getAsDouble());
 		}
-		else if(node.getName()=="p")
+		else if(node.getName() == "p")
 		{
-			_particleKind=((FloatValue)node.consumeFirstValue()).getAsFloat();
+			_particleKind = ((FloatValue) node.consumeFirstValue()).getAsFloat();
 		}
 		return super.visitSimpleStateNode(node);
 	}
