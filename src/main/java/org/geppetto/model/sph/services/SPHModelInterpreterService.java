@@ -43,8 +43,8 @@ import javax.xml.bind.Unmarshaller;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geppetto.core.beans.ModelInterpreterConfig;
+import org.geppetto.core.model.AModelInterpreter;
 import org.geppetto.core.model.IModel;
-import org.geppetto.core.model.IModelInterpreter;
 import org.geppetto.core.model.ModelInterpreterException;
 import org.geppetto.core.model.runtime.AspectNode;
 import org.geppetto.core.model.runtime.AspectSubTreeNode;
@@ -61,7 +61,7 @@ import org.springframework.stereotype.Service;
  * 
  */
 @Service
-public class SPHModelInterpreterService implements IModelInterpreter
+public class SPHModelInterpreterService extends AModelInterpreter
 {
 
 	private static Log logger = LogFactory.getLog(SPHModelInterpreterService.class);
